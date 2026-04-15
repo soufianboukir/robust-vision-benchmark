@@ -11,13 +11,18 @@ def add_gaussian_noise(image, severity): # image is a tensor of shape(Channel, H
     std_levels = [0.0, 0.05, 0.10, 0.15, 0.20] # standard deviation levels from 0 to 0.20 more noise
     std = std_levels[severity] # get the standard deviation value using sevrity level
     if std == 0.0: # if the standard deviation equals 0, we return the copy of the image
-        return image.clone()
+        # a = image
+        # b = image
+        # Now:
+        # a and b are the same object
+        # modifying one modifies both
+        return image.clone() # key idea: “no change” ≠ “same object”
     noise = torch.randn_like(image) * std # generates a noise tensor with X follows a normal distribution (0,1), multiplying this noise with std to scale it
     return torch.clamp(image + noise, 0.0, 1.0) # apply clamping to ensure that the values are in range (0,1)
 
 
 
-def _gaussian_kernel(kernel_size: int, sigma: float) -> torch.Tensor:
+def _gaussian_kernel(kernel_size, sigma):
     """Builds a 2-D Gaussian kernel as a 4-D conv weight tensor."""
     coords = torch.arange(kernel_size, dtype=torch.float32) - kernel_size // 2
     g = torch.exp(-(coords ** 2) / (2 * sigma ** 2))
