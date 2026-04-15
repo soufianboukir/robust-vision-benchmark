@@ -78,18 +78,26 @@ def apply_occlusion(image, severity):
 # Apply image compression
 def apply_jpeg_compression(image, severity):
     quality_levels = [95, 75, 50, 25, 10]
-    quality = quality_levels[severity]
+    quality = quality_levels[severity] # get the compression level based on severity
 
     # tensor (C, H, W) float [0,1] → PIL uint8
+    # convert a pytorch image to numpy image
+    # PyTorch format, permute work:
+        # (C, H, W)
+        # PIL/NumPy format:
+        # (H, W, C)
+    # numpy: convert tensor to numpy array with values from 0 to 255
+    # clip(255), ensures that all values are [0,255], astype(uint), make sure that the values are all integers
     np_img = (image.permute(1, 2, 0).numpy() * 255).clip(0, 255).astype(np.uint8)
-    pil_img = Image.fromarray(np_img)
+    pil_img = Image.fromarray(np_img) # convert to PIL image
 
+    # image compression
     buffer = io.BytesIO()
     pil_img.save(buffer, format="JPEG", quality=quality)
     buffer.seek(0)
     decoded = Image.open(buffer).convert("RGB")
 
-    out = torch.from_numpy(np.array(decoded)).permute(2, 0, 1).float() / 255.0
+    out = torch.from_numpy(np.array(decoded)).permute(2, 0, 1).float() / 255.0 # convert it again to pytorch format & devide by 255 to make sure values are in [0,1]
     return out
 
 
@@ -99,13 +107,6 @@ def apply_brightness_contrast(
     severity,
     mode: str = "brightness",
 ):
-    """
-    Simulates lighting conditions.
-    mode='brightness': additive shift (positive = lighter, negative = darker)
-    mode='contrast':   multiplicative scaling around 0.5 mid-grey
-
-    severity 0 → identity, higher → stronger shift.
-    """
     brightness_deltas = [0.0, 0.08, 0.16, 0.24, 0.32]
     contrast_factors  = [1.0, 0.85, 0.70, 0.55, 0.40]
 
@@ -121,13 +122,7 @@ def apply_brightness_contrast(
 
 
 # random rotation: Image augmentation
-def apply_rotation(image: torch.Tensor, severity: int) -> torch.Tensor:
-    """
-    Applies a random rotation whose maximum angle scales with severity.
-    Uses bilinear grid-sampling; corners are filled with 0 (black).
-
-    severity 0 → 0°, 4 → up to ±45°.
-    """
+def apply_rotation(image, severity):
     max_angle_deg = [0, 10, 20, 30, 45]
     max_deg = max_angle_deg[severity]
     if max_deg == 0:
