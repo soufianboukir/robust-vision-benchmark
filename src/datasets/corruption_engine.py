@@ -7,13 +7,13 @@ import random
 
 
 # apply gaussian noise
-def add_gaussian_noise(image, severity):
-    std_levels = [0.0, 0.05, 0.10, 0.15, 0.20]
-    std = std_levels[severity]
-    if std == 0.0:
+def add_gaussian_noise(image, severity): # image is a tensor of shape(Channel, H, W) with values [0,1]
+    std_levels = [0.0, 0.05, 0.10, 0.15, 0.20] # standard deviation levels from 0 to 0.20 more noise
+    std = std_levels[severity] # get the standard deviation value using sevrity level
+    if std == 0.0: # if the standard deviation equals 0, we return the copy of the image
         return image.clone()
-    noise = torch.randn_like(image) * std
-    return torch.clamp(image + noise, 0.0, 1.0)
+    noise = torch.randn_like(image) * std # generates a noise tensor with X follows a normal distribution (0,1), multiplying this noise with std to scale it
+    return torch.clamp(image + noise, 0.0, 1.0) # apply clamping to ensure that the values are in range (0,1)
 
 
 
