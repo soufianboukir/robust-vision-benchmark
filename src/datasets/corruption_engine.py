@@ -122,13 +122,17 @@ def apply_brightness_contrast(
 # random rotation: Image augmentation
 def apply_rotation(image, severity):
     max_angle_deg = [0, 10, 20, 30, 45] # different max angle degree based on severity level
-    max_deg = max_angle_deg[severity]
-    if max_deg == 0:
+    max_deg = max_angle_deg[severity] # get max degree based on severity level
+    if max_deg == 0: # return a copy of the image if the severity level is 0
         return image.clone()
 
-    angle_deg = random.uniform(-max_deg, max_deg)
-    angle_rad = torch.tensor(angle_deg * np.pi / 180.0)
+    angle_deg = random.uniform(-max_deg, max_deg) # get a random angle degree between -max_deg and max_deg
+    angle_rad = torch.tensor(angle_deg * np.pi / 180.0) # change the angle degree from deg to rad, math functions in PyTorch use radians, not degrees
 
+    # These define rotation geometry:
+
+    # cos → horizontal scaling
+    # sin → vertical mixing
     cos_a = torch.cos(angle_rad)
     sin_a = torch.sin(angle_rad)
 
@@ -145,9 +149,8 @@ def apply_rotation(image, severity):
     return torch.clamp(rotated.squeeze(0), 0.0, 1.0)
 
 
-# ─────────────────────────────────────────────
-#  Master dispatcher
-# ─────────────────────────────────────────────
+
+
 CORRUPTION_TYPES = [
     "gaussian_noise",
     "blur",
@@ -158,26 +161,14 @@ CORRUPTION_TYPES = [
     "rotation",
 ]
 
-
+# apply a corruption on a single image
 def apply_corruption(
     image,
     corruption_type,
     severity,
-) -> torch.Tensor:
-    """
-    Apply a named corruption at a given severity level.
-
-    Args:
-        image          : Float tensor of shape (C, H, W) in [0, 1].
-        corruption_type: One of CORRUPTION_TYPES.
-        severity       : Integer in range [0, 4].
-                         0 = clean / identity.
-                         4 = extreme corruption.
-
-    Returns:
-        Corrupted float tensor of the same shape, values in [0, 1].
-    """
-    assert 0 <= severity <= 4, "severity must be 0–4"
+):
+    assert 0 <= severity <= 4, "severity must be 0-4" # assert used to ensure that the condition is True, if it's false stop the program
+    # A lambda is a short, anonymous function.
     dispatch = {
         "gaussian_noise":  add_gaussian_noise,
         "blur":            apply_blur,
@@ -187,31 +178,15 @@ def apply_corruption(
         "contrast":        lambda img, sev: apply_brightness_contrast(img, sev, "contrast"),
         "rotation":        apply_rotation,
     }
-    if corruption_type not in dispatch:
-        raise ValueError(
-            f"Unknown corruption '{corruption_type}'. "
-            f"Choose from: {list(dispatch.keys())}"
-        )
     return dispatch[corruption_type](image, severity)
 
 
-# ─────────────────────────────────────────────
-#  Batch helper  (useful in evaluation loops)
-# ─────────────────────────────────────────────
+# appply corruption on a batch of images
 def apply_corruption_batch(
-    images: torch.Tensor,
-    corruption_type: str,
-    severity: int,
-) -> torch.Tensor:
-    """
-    Apply the same corruption to every image in a batch.
-
-    Args:
-        images: Float tensor of shape (N, C, H, W) in [0, 1].
-
-    Returns:
-        Corrupted batch tensor of the same shape.
-    """
+    images,
+    corruption_type,
+    severity,
+):
     return torch.stack([
         apply_corruption(img, corruption_type, severity)
         for img in images
