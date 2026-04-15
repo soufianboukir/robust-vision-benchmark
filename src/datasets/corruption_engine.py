@@ -22,22 +22,24 @@ def add_gaussian_noise(image, severity): # image is a tensor of shape(Channel, H
 
 
 
+# build a 2D gaussian kernel
 def _gaussian_kernel(kernel_size, sigma):
-    """Builds a 2-D Gaussian kernel as a 4-D conv weight tensor."""
-    coords = torch.arange(kernel_size, dtype=torch.float32) - kernel_size // 2
-    g = torch.exp(-(coords ** 2) / (2 * sigma ** 2))
-    g /= g.sum()
-    kernel = g.outer(g)                                # (k, k)
-    # shape: (out_ch, in_ch/groups, k, k) – used with groups=C for depthwise
-    return kernel.unsqueeze(0).unsqueeze(0)
+    coords = torch.arange(kernel_size, dtype=torch.float32) - kernel_size // 2 # generates coords (array of integers) based on the kernel size if it's 5 then coords = [0, 1, 2, 3, 4] - 2 = [-2, -1 , 0, 1, 2]
+    # I used the torch.float32 above to ensure that the results of g bottom will be floats not ints cause sometimes int/int = 0, ex: 1/2 = 0: in many old math libraries
+    g = torch.exp(-(coords ** 2) / (2 * sigma ** 2)) # apply the gaussian formula to get [0, 1, 2, 3, 4]the importance of each pixel
+    g /= g.sum() # normalization (make sure that the values are sum to 1), new_pixel = old_pixel / sum_pixels
+    # g = [a, b, c]
+    # outer(g, g) =
+    # a*a   a*b   a*c
+    # b*a   b*b   b*c
+    # c*a   c*b   c*c
+    kernel = g.outer(g) # apply the outer product above
+
+    return kernel.unsqueeze(0).unsqueeze(0) # add 2 other dimensions to the kernel so it will be (out_channels, in_channels, h, w)
 
 
 # apply blur
-def apply_blur(image: torch.Tensor, severity: int) -> torch.Tensor:
-    """
-    Applies Gaussian blur with increasing kernel / sigma per severity level.
-    severity 0 → identity, 4 → heavy blur.
-    """
+def apply_blur(image, severity):
     params = [
         (1, 0.0),   # level 0 – clean
         (3, 0.5),   # level 1 – slight
@@ -45,16 +47,17 @@ def apply_blur(image: torch.Tensor, severity: int) -> torch.Tensor:
         (7, 1.5),   # level 3 – strong
         (9, 2.0),   # level 4 – extreme
     ]
-    k_size, sigma = params[severity]
-    if sigma == 0.0:
+    k_size, sigma = params[severity] # get the kernel_size and the sigma value vased on severity level
+    if sigma == 0.0: # return the copy of the image if severity level is 0
         return image.clone()
 
-    C = image.shape[0]
-    kernel = _gaussian_kernel(k_size, sigma).repeat(C, 1, 1, 1)  # (C,1,k,k)
-    pad = k_size // 2
-    img4d = image.unsqueeze(0)                         # (1, C, H, W)
-    blurred = F.conv2d(img4d, kernel, padding=pad, groups=C)
-    return torch.clamp(blurred.squeeze(0), 0.0, 1.0)
+    C = image.shape[0] # get the number of channels, for CIFAR dataset, C = 3
+    kernel = _gaussian_kernel(k_size, sigma).repeat(C, 1, 1, 1)  # get the gaussian kernel, shape before repeat: (1, 1, k, k), 
+    # after repeat = (3, 1, k, k), this means repeat filters C times, 1,1,1 means do not change other parameters
+    pad = k_size // 2 # add padding to avoid image shrinking after applying kernels
+    img4d = image.unsqueeze(0)                         # (1, C, H, W) cause Conve2d expects an input that has batch_size
+    blurred = F.conv2d(img4d, kernel, padding=pad, groups=C) # apply each kernel to each channel independantely
+    return torch.clamp(blurred.squeeze(0), 0.0, 1.0) # make sure that the values are in range 0,1 and remove the batch size dimension
 
 
 # apply Occlusion: Random black squares on image
