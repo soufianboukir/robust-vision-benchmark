@@ -63,15 +63,15 @@ def apply_blur(image, severity):
 # apply Occlusion: Random black squares on image
 def apply_occlusion(image, severity):
     size_levels = [0, 4, 8, 12, 16]
-    size = size_levels[severity]
-    if size == 0:
+    size = size_levels[severity] # get the block size based on severity level
+    if size == 0: # return a clone of the image if severity is 0
         return image.clone()
 
-    img = image.clone()
-    _, h, w = img.shape
-    x = random.randint(0, max(0, w - size - 1))
-    y = random.randint(0, max(0, h - size - 1))
-    img[:, y:y + size, x:x + size] = 0.0
+    img = image.clone() # copy the image to prevent modify on the original one
+    _, h, w = img.shape # get the w,h of the image, _ to ignore image channel
+    x = random.randint(0, max(0, w - size - 1)) # random position of x
+    y = random.randint(0, max(0, h - size - 1)) # random position of y
+    img[:, y:y + size, x:x + size] = 0.0 # : apply this for all channels, from y to y + size, and from x to x + size, pixels set to 0
     return img
 
 
