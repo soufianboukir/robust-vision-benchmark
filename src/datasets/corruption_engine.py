@@ -112,18 +112,16 @@ def apply_brightness_contrast(
 
     img = image.clone()
     if mode == "brightness":
-        delta = brightness_deltas[severity]
-        return torch.clamp(img + delta, 0.0, 1.0)
+        delta = brightness_deltas[severity] # get the brightness delta
+        return torch.clamp(img + delta, 0.0, 1.0) # we want the image to be more lighter
     elif mode == "contrast":
-        factor = contrast_factors[severity]
-        return torch.clamp((img - 0.5) * factor + 0.5, 0.0, 1.0)
-    else:
-        raise ValueError(f"Unknown mode '{mode}'. Choose 'brightness' or 'contrast'.")
+        factor = contrast_factors[severity] # get the contrast factor
+        return torch.clamp((img - 0.5) * factor + 0.5, 0.0, 1.0) # we want everything moves toward 0.5 the middle(gray) and keep values in range [0,1]
 
 
 # random rotation: Image augmentation
 def apply_rotation(image, severity):
-    max_angle_deg = [0, 10, 20, 30, 45]
+    max_angle_deg = [0, 10, 20, 30, 45] # different max angle degree based on severity level
     max_deg = max_angle_deg[severity]
     if max_deg == 0:
         return image.clone()
