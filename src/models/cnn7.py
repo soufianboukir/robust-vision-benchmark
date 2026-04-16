@@ -36,10 +36,10 @@ class CNN7(nn.Module):
             nn.MaxPool2d(2, 2),
 
             # Global Average Pooling instead of Flatten
-            nn.AdaptiveAvgPool2d((1, 1)),
+            nn.AdaptiveAvgPool2d((1, 1)), # Take each feature map and average ALL its spatial values into ONE number. (512,1,1)
 
             # FC Layers
-            nn.Flatten(),
+            nn.Flatten(), # (512)
             nn.Dropout(0.5),
             nn.Linear(512, 256),
             nn.ReLU(),
