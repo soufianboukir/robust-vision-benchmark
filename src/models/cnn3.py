@@ -5,7 +5,7 @@ class CNN3(nn.Module):
         super().__init__()
         self.net = nn.Sequential(
             # conv block 1
-            nn.Conv2d(3, 32, kernel_size=3, padding=1),
+            nn.Conv2d(3, 32, kernel_size=3, padding=1), # producing 32 feature maps, 3 for nm of channels
             nn.Relu(),
             nn.MaxPool2d(2,2),
 
