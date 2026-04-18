@@ -1,4 +1,7 @@
+import torch
+
 from torchvision import datasets, transforms
+from config.config import Config
 
 transform = transforms.Compose([
     transforms.ToTensor()
@@ -16,4 +19,12 @@ test_dataset = datasets.CIFAR10(
     train=False,
     download=True,
     transform=transform
+)
+
+train_loader = torch.utils.data.DataLoader(
+    train_dataset, batch_size=Config.batch_size, shuffle=True
+)
+
+test_loader = torch.utils.data.DataLoader(
+    test_dataset, batch_size=Config.batch_size, shuffle=False
 )

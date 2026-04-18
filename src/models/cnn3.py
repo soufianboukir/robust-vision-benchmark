@@ -26,5 +26,5 @@ class CNN3(nn.Module):
             nn.Linear(256,10),
         )
 
-    def forware(self, x):
+    def forward(self, x):
         return self.net(x)
