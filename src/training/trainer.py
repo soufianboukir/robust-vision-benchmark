@@ -1,6 +1,8 @@
 import torch
 from src.datasets.corruption_engine import apply_corruption_batch
 
+
+
 def train_model(model, train_loader, optimizer, criterion, device, isMLP):
     model.train()
 
@@ -51,3 +53,7 @@ def evaluate_model(model, loader, device, isMLP, corruption_type=None,severity=0
             total += labels.size(0)
 
     return correct / total
+
+
+
+

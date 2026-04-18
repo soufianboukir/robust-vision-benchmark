@@ -29,7 +29,7 @@ def get_model(model_name):
     elif model_name == 'resnet50':
         return ResNet50()
     else:
-        print(f"Unknow model {model_name}")
+        raise ValueError(f"Unknown model {model_name}")
 
 
 import torch

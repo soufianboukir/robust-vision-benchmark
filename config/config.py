@@ -6,7 +6,7 @@ class Config:
 
     device = "cuda"
 
-    model_type = "cnn3"
+    model_type = "mlp3"
 
     data_path = "./data"
     save_dir = "../../saved_models/mlp3.pth"
