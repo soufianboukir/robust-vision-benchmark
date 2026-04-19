@@ -1,3 +1,5 @@
+import os
+
 class Config:
 
     batch_size = 128
@@ -9,4 +11,4 @@ class Config:
     model_type = "mlp3"
 
     data_path = "./data"
-    save_dir = "../../saved_models/mlp3.pth"
+    save_dir = os.path.join(os.getcwd(), "saved_models")

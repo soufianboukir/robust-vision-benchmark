@@ -67,18 +67,18 @@ def run_experiment(config, train_loader, test_loader):
     results["clean"] = clean_acc
 
     # Corrupted accuracy
-    # for corruption in CORRUPTION_TYPES:
-    #     results[corruption] = []
+    for corruption in CORRUPTION_TYPES:
+        results[corruption] = []
 
-    #     for severity in range(1, 5):
-    #         acc = evaluate_model(
-    #             model,
-    #             test_loader,
-    #             device,
-    #             corruption_type=corruption,
-    #             severity=severity
-    #         )
-    #         results[corruption].append(acc)
+        for severity in range(1, 5):
+            acc = evaluate_model(
+                model,
+                test_loader,
+                device,
+                corruption_type=corruption,
+                severity=severity
+            )
+            results[corruption].append(acc)
 
     return results
 

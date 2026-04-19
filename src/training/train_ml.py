@@ -9,6 +9,14 @@ from src.models.random_forest import RandomForestModel
 from src.datasets.cifar_loader import train_loader
 from src.datasets.cifar_loader import test_loader
 
+import joblib
+import os
+
+def save_ml_model(model, save_dir, model_name):
+    os.makedirs(save_dir, exist_ok=True)
+    path = os.path.join(save_dir, f"{model_name}.joblib")
+    joblib.dump(model, path)
+    print(f"Model saved to {path}")
 
 def get_model(model_name):
     if model_name == 'lr':
@@ -90,5 +98,7 @@ if __name__ == '__main__':
     model = get_model('lr')
 
     train_ml_model(model, train_loader)
+    save_ml_model(model, save_dir="saved_models", model_name=model)
     results = evaluate_all_ml(model, test_loader)
     print(results)
+
