@@ -12,6 +12,9 @@ from src.datasets.cifar_loader import test_loader
 import joblib
 import os
 
+from config.config import Config
+
+
 def save_ml_model(model, save_dir, model_name):
     os.makedirs(save_dir, exist_ok=True)
     path = os.path.join(save_dir, f"{model_name}.joblib")
@@ -98,7 +101,7 @@ if __name__ == '__main__':
     model = get_model('lr')
 
     train_ml_model(model, train_loader)
-    save_ml_model(model, save_dir="saved_models", model_name=model)
+    save_ml_model(model, save_dir="saved_models", model_name=Config.model_type)
     results = evaluate_all_ml(model, test_loader)
     print(results)
 

@@ -3,7 +3,10 @@ from src.models.base import BaseModel
 
 class LogisticModel(BaseModel):
     def __init__(self):
-        self.model = LogisticRegression(max_iter=1000)
+        self.model = LogisticRegression(
+            solver="saga",
+            max_iter=3000
+        )
 
     def fit(self, X, y):
         self.model.fit(X, y)
