@@ -1,0 +1,327 @@
+{
+    "clean": {
+        "accuracy": 0.2301,
+        "precision": 0.43737911678484487,
+        "recall": 0.2301,
+        "f1": 0.1832759353272102
+    },
+    "corruptions": {
+        "gaussian_noise": {
+            "severities": [
+                {
+                    "accuracy": 0.2299,
+                    "precision": 0.43685232295685444,
+                    "recall": 0.2299,
+                    "f1": 0.1832140383069517
+                },
+                {
+                    "accuracy": 0.2257,
+                    "precision": 0.4269497243838113,
+                    "recall": 0.2257,
+                    "f1": 0.17631787516232597
+                },
+                {
+                    "accuracy": 0.2211,
+                    "precision": 0.4291724228172402,
+                    "recall": 0.2211,
+                    "f1": 0.1716748593436857
+                },
+                {
+                    "accuracy": 0.2139,
+                    "precision": 0.42124437280312216,
+                    "recall": 0.2139,
+                    "f1": 0.16272511009067503
+                }
+            ],
+            "average": {
+                "accuracy": 0.22265,
+                "precision": 0.428554710740257,
+                "recall": 0.22265,
+                "f1": 0.17348297072590962
+            },
+            "crs": 0.9676227727075184,
+            "stability": 0.9940664091816169,
+            "worst_case": 0.2139,
+            "severity_degradation": 0.015999999999999986,
+            "sensitivity_score": 0.007450000000000012
+        },
+        "blur": {
+            "severities": [
+                {
+                    "accuracy": 0.2206,
+                    "precision": 0.4329854114137532,
+                    "recall": 0.2206,
+                    "f1": 0.1673978131600891
+                },
+                {
+                    "accuracy": 0.2073,
+                    "precision": 0.43990740722844984,
+                    "recall": 0.2073,
+                    "f1": 0.14210810255804535
+                },
+                {
+                    "accuracy": 0.1998,
+                    "precision": 0.4636853114260859,
+                    "recall": 0.1998,
+                    "f1": 0.12600018036191646
+                },
+                {
+                    "accuracy": 0.1944,
+                    "precision": 0.46976476781254617,
+                    "recall": 0.1944,
+                    "f1": 0.11548850057932611
+                }
+            ],
+            "average": {
+                "accuracy": 0.205525,
+                "precision": 0.4515857244702087,
+                "recall": 0.205525,
+                "f1": 0.13774864916484425
+            },
+            "crs": 0.8931986093003043,
+            "stability": 0.990164509417421,
+            "worst_case": 0.1944,
+            "severity_degradation": 0.0262,
+            "sensitivity_score": 0.024574999999999986
+        },
+        "occlusion": {
+            "severities": [
+                {
+                    "accuracy": 0.2309,
+                    "precision": 0.43937463724703546,
+                    "recall": 0.2309,
+                    "f1": 0.18595178536898951
+                },
+                {
+                    "accuracy": 0.2299,
+                    "precision": 0.4180260911205667,
+                    "recall": 0.2299,
+                    "f1": 0.19223736805239958
+                },
+                {
+                    "accuracy": 0.2183,
+                    "precision": 0.38618474349351245,
+                    "recall": 0.2183,
+                    "f1": 0.1854265050181718
+                },
+                {
+                    "accuracy": 0.2005,
+                    "precision": 0.34814350500412283,
+                    "recall": 0.2005,
+                    "f1": 0.16812757567150674
+                }
+            ],
+            "average": {
+                "accuracy": 0.2199,
+                "precision": 0.39793224421630935,
+                "recall": 0.2199,
+                "f1": 0.1829358085277669
+            },
+            "crs": 0.955671447196871,
+            "stability": 0.9877533678098834,
+            "worst_case": 0.2005,
+            "severity_degradation": 0.030399999999999983,
+            "sensitivity_score": 0.010199999999999987
+        },
+        "jpeg_compression": {
+            "severities": [
+                {
+                    "accuracy": 0.2268,
+                    "precision": 0.4306886247482569,
+                    "recall": 0.2268,
+                    "f1": 0.1787278284823511
+                },
+                {
+                    "accuracy": 0.2243,
+                    "precision": 0.4302846966859537,
+                    "recall": 0.2243,
+                    "f1": 0.1764966287683683
+                },
+                {
+                    "accuracy": 0.2218,
+                    "precision": 0.41938905564388523,
+                    "recall": 0.2218,
+                    "f1": 0.1721172295002948
+                },
+                {
+                    "accuracy": 0.2098,
+                    "precision": 0.4059577184447619,
+                    "recall": 0.2098,
+                    "f1": 0.16174615806157283
+                }
+            ],
+            "average": {
+                "accuracy": 0.220675,
+                "precision": 0.42158002388071447,
+                "recall": 0.220675,
+                "f1": 0.17227196120314675
+            },
+            "crs": 0.9590395480225989,
+            "stability": 0.9934772034371752,
+            "worst_case": 0.2098,
+            "severity_degradation": 0.017000000000000015,
+            "sensitivity_score": 0.009424999999999989
+        },
+        "brightness": {
+            "severities": [
+                {
+                    "accuracy": 0.2095,
+                    "precision": 0.4282455994143539,
+                    "recall": 0.2095,
+                    "f1": 0.15288510539800448
+                },
+                {
+                    "accuracy": 0.1925,
+                    "precision": 0.44609441843219194,
+                    "recall": 0.1925,
+                    "f1": 0.13169212536378067
+                },
+                {
+                    "accuracy": 0.1755,
+                    "precision": 0.444561235543275,
+                    "recall": 0.1755,
+                    "f1": 0.10843285786234247
+                },
+                {
+                    "accuracy": 0.1585,
+                    "precision": 0.44814546602392186,
+                    "recall": 0.1585,
+                    "f1": 0.09015500390162193
+                }
+            ],
+            "average": {
+                "accuracy": 0.184,
+                "precision": 0.44176167985343573,
+                "recall": 0.184,
+                "f1": 0.1207912731314374
+            },
+            "crs": 0.7996523250760539,
+            "stability": 0.9809934221912517,
+            "worst_case": 0.1585,
+            "severity_degradation": 0.05099999999999999,
+            "sensitivity_score": 0.0461
+        },
+        "contrast": {
+            "severities": [
+                {
+                    "accuracy": 0.2011,
+                    "precision": 0.4283372943730104,
+                    "recall": 0.2011,
+                    "f1": 0.14320040433285686
+                },
+                {
+                    "accuracy": 0.1709,
+                    "precision": 0.4155354441396854,
+                    "recall": 0.1709,
+                    "f1": 0.10458353640339674
+                },
+                {
+                    "accuracy": 0.1432,
+                    "precision": 0.44160057022818344,
+                    "recall": 0.1432,
+                    "f1": 0.07457442246360761
+                },
+                {
+                    "accuracy": 0.1169,
+                    "precision": 0.11282649255768151,
+                    "recall": 0.1169,
+                    "f1": 0.045539934652207216
+                }
+            ],
+            "average": {
+                "accuracy": 0.158025,
+                "precision": 0.34957495032464014,
+                "recall": 0.158025,
+                "f1": 0.09197457446301711
+            },
+            "crs": 0.6867666232073012,
+            "stability": 0.9686461027143355,
+            "worst_case": 0.1169,
+            "severity_degradation": 0.0842,
+            "sensitivity_score": 0.072075
+        },
+        "rotation": {
+            "severities": [
+                {
+                    "accuracy": 0.2062,
+                    "precision": 0.44694831954608555,
+                    "recall": 0.2062,
+                    "f1": 0.14450633907621158
+                },
+                {
+                    "accuracy": 0.19,
+                    "precision": 0.39496431654605063,
+                    "recall": 0.19,
+                    "f1": 0.12258547676233564
+                },
+                {
+                    "accuracy": 0.1841,
+                    "precision": 0.469735279408706,
+                    "recall": 0.1841,
+                    "f1": 0.11298137909572434
+                },
+                {
+                    "accuracy": 0.1752,
+                    "precision": 0.3883256262730771,
+                    "recall": 0.1752,
+                    "f1": 0.09961630507127336
+                }
+            ],
+            "average": {
+                "accuracy": 0.18887500000000002,
+                "precision": 0.42499338544347987,
+                "recall": 0.18887500000000002,
+                "f1": 0.11992237500138625
+            },
+            "crs": 0.82083876575402,
+            "stability": 0.9886948297226446,
+            "worst_case": 0.1752,
+            "severity_degradation": 0.031,
+            "sensitivity_score": 0.041224999999999984
+        }
+    },
+    "generalization_gap": 0.03015000000000001,
+    "corruption_sensitivity_scores": {
+        "gaussian_noise": 0.007450000000000012,
+        "blur": 0.024574999999999986,
+        "occlusion": 0.010199999999999987,
+        "jpeg_compression": 0.009424999999999989,
+        "brightness": 0.0461,
+        "contrast": 0.072075,
+        "rotation": 0.041224999999999984
+    },
+    "worst_corruption": "contrast",
+    "corruption_ranking": [
+        [
+            "contrast",
+            0.072075
+        ],
+        [
+            "brightness",
+            0.0461
+        ],
+        [
+            "rotation",
+            0.041224999999999984
+        ],
+        [
+            "blur",
+            0.024574999999999986
+        ],
+        [
+            "occlusion",
+            0.010199999999999987
+        ],
+        [
+            "jpeg_compression",
+            0.009424999999999989
+        ],
+        [
+            "gaussian_noise",
+            0.007450000000000012
+        ]
+    ],
+    "overall_crs": 0.8689700130378097,
+    "robustness_stability": 0.9027017209225016,
+    "training_time_minutes": 1.1989518404006958
+}
