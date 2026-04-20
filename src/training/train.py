@@ -36,7 +36,10 @@ def preprocess_dl(images, corruption_type=None, severity=0):
 # TRAINING (UNIFIED)
 # ======================================================
 
+import time
+
 def train_model_unified(model, train_loader, device, is_torch):
+    
     start_time = time.time()
 
     # ---------------- ML MODE ----------------
@@ -45,6 +48,7 @@ def train_model_unified(model, train_loader, device, is_torch):
 
         for images, labels in train_loader:
             images = preprocess_ml(images)
+
             X_list.append(images.detach().cpu().numpy())
             y_list.append(labels.detach().cpu().numpy())
 
@@ -52,28 +56,40 @@ def train_model_unified(model, train_loader, device, is_torch):
         y = np.concatenate(y_list)
 
         X = (X - 0.5) / 0.5
+
         model.fit(X, y)
 
     # ---------------- DL MODE ----------------
     else:
         model.train()
+
         optimizer = torch.optim.Adam(model.parameters(), lr=Config.learning_rate)
         criterion = torch.nn.CrossEntropyLoss()
 
-        for images, labels in train_loader:
-            images = images.to(device)
-            labels = labels.to(device)
+        for epoch in range(Config.epochs):
+            epoch_loss = 0.0
 
-            optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+            for images, labels in train_loader:
+                images = images.to(device)
+                labels = labels.to(device)
+
+                optimizer.zero_grad()
+
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+
+                loss.backward()
+                optimizer.step()
+
+                epoch_loss += loss.item()
+
+            print(f"Epoch {epoch+1}/{Config.epochs} - Loss: {epoch_loss:.4f}")
 
     end_time = time.time()
 
-    return (end_time - start_time) / 60
+    training_time_minutes = (end_time - start_time) / 60
 
+    return training_time_minutes
 
 # ======================================================
 # EVALUATION (UNIFIED)
@@ -138,6 +154,8 @@ def evaluate_model_unified(model, loader, device, corruption_type=None, severity
 def evaluate_full_robustness(model, test_loader, device):
     results = {}
 
+    results["model_name"] = Config.model_type
+    
     clean = evaluate_model_unified(model, test_loader, device)
     results["clean"] = clean
 
@@ -249,7 +267,7 @@ if __name__ == '__main__':
         joblib.dump(model, os.path.join(Config.save_dir, f"{Config.model_type}.joblib"))
 
     results = evaluate_full_robustness(model, test_loader, device)
-
+    
     results["training_time_minutes"] = training_time
 
     save_results(results=results, model_name=Config.model_type)
