@@ -13,7 +13,7 @@ import joblib
 import os
 
 from config.config import Config
-
+from utils.start import save_results
 
 def save_ml_model(model, save_dir, model_name):
     os.makedirs(save_dir, exist_ok=True)
@@ -36,7 +36,7 @@ def preprocess_ml(images, corruption_type=None, severity=0):
     if corruption_type is not None:
         images = apply_corruption_batch(images, corruption_type, severity)
 
-    return images.view(images.size(0), -1)
+    return images.view(images.size(0), -1) # flatten the input
 
 
 def collect_data(loader, corruption_type=None, severity=0):
@@ -103,5 +103,6 @@ if __name__ == '__main__':
     train_ml_model(model, train_loader)
     save_ml_model(model, save_dir="saved_models", model_name=Config.model_type)
     results = evaluate_all_ml(model, test_loader)
-    print(results)
+    save_results(results=results, model_name=Config.model_type)
+
 
