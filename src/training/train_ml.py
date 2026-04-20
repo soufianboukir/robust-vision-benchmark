@@ -59,40 +59,63 @@ def train_ml_model(model, train_loader):
     X, y = collect_data(train_loader)
     model.fit(X, y)
 
+import numpy as np
+
+from sklearn.metrics import precision_score, recall_score, f1_score
+
 def evaluate_ml_model(model, loader, corruption_type=None, severity=0):
-    correct, total = 0, 0
+    predictions = []
+    targets = []
 
     for images, labels in loader:
         images = preprocess_ml(images, corruption_type, severity)
 
         preds = model.predict(images.detach().cpu().numpy())
 
-        correct += (preds == labels.detach().cpu().numpy()).sum()
-        total += labels.size(0)
+        predictions.extend(preds)
+        targets.extend(labels.detach().cpu().numpy())
 
-    return correct / total
+    predictions = np.array(predictions)
+    targets = np.array(targets)
 
+    accuracy = (predictions == targets).mean()
+    precision = precision_score(targets, predictions, average='weighted', zero_division=0)
+    recall = recall_score(targets, predictions, average='weighted', zero_division=0)
+    f1 = f1_score(targets, predictions, average='weighted', zero_division=0)
+
+    return {
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1
+    }
+
+
+from src.datasets.corruption_engine import CORRUPTION_TYPES
 
 from src.datasets.corruption_engine import CORRUPTION_TYPES
 
 def evaluate_all_ml(model, test_loader):
     results = {}
 
-    # Clean accuracy
-    results["clean"] = evaluate_ml_model(model, test_loader)
+    # Clean evaluation
+    clean_metrics = evaluate_ml_model(model, test_loader)
+    results['model_name'] = Config.model_type
+    results["clean"] = clean_metrics
 
-    # Corruption evaluation
+    # Corrupted evaluation
     for corruption in CORRUPTION_TYPES:
         results[corruption] = []
 
         for severity in range(1, 5):
-            acc = evaluate_ml_model(
+            metrics = evaluate_ml_model(
                 model,
                 test_loader,
                 corruption_type=corruption,
                 severity=severity
             )
-            results[corruption].append(acc)
+
+            results[corruption].append(metrics)
 
     return results
 

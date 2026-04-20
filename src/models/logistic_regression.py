@@ -3,7 +3,7 @@ from src.models.base import BaseModel
 from sklearn.decomposition import PCA
 
 class LogisticModel(BaseModel):
-    def __init__(self, n_components=20):
+    def __init__(self, n_components=500):
         self.pca = PCA(n_components=n_components)
         self.model = LogisticRegression(
             solver="saga",
