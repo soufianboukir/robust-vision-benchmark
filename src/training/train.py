@@ -25,6 +25,12 @@ def preprocess_ml(images, corruption_type=None, severity=0):
         images = apply_corruption_batch(images, corruption_type, severity)
     return images.view(images.size(0), -1)
 
+def preprocess_dl(images, corruption_type=None, severity=0):
+    if corruption_type is not None:
+        images = apply_corruption_batch(images, corruption_type, severity)
+
+    return images  # NO flattening
+
 
 # ======================================================
 # TRAINING (UNIFIED)
@@ -84,7 +90,10 @@ def evaluate_model_unified(model, loader, device, corruption_type=None, severity
 
     for images, labels in loader:
 
-        images = preprocess_ml(images, corruption_type, severity)
+        if torch_model:
+            images = preprocess_dl(images, corruption_type, severity)
+        else:
+            images = preprocess_ml(images, corruption_type, severity)
 
         # ---------------- DL ----------------
         if torch_model:
