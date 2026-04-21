@@ -73,39 +73,6 @@ def get_model(model_name):
 import numpy as np
 import torch
 
-def count_parameters_torch(model):
+def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
-
-
-def count_parameters_ml(model):
-
-    # Logistic Regression
-    if hasattr(model, "coef_"):
-        coef_params = np.prod(model.coef_.shape)
-        intercept_params = np.prod(model.intercept_.shape) if model.intercept_ is not None else 0
-        return int(coef_params + intercept_params)
-
-    # Random Forest (complexity proxy)
-    elif hasattr(model, "estimators_"):
-        return sum(est.tree_.node_count for est in model.estimators_)
-
-    # KNN (non-parametric)
-    elif hasattr(model, "_fit_X"):
-        return 0
-
-    # SVM (complexity proxy)
-    elif hasattr(model, "support_vectors_"):
-        return model.support_vectors_.shape[0]
-
-    # MLP (sklearn)
-    elif hasattr(model, "coefs_"):
-        return int(
-            sum(coef.size for coef in model.coefs_) +
-            sum(intercept.size for intercept in model.intercepts_)
-        )
-
-    return 0
-
-
-def get_model_parameters(model, is_torch_model):
-    return count_parameters_torch(model) if is_torch_model else count_parameters_ml(model)
+ 

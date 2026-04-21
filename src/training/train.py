@@ -12,7 +12,7 @@ from utils.start import get_model
 
 from src.datasets.cifar_loader import train_loader, test_loader, val_loader
 
-from utils.start import is_torch_model, get_model_parameters
+from utils.start import is_torch_model, count_parameters
 
 # ======================================================
 # PREPROCESSING
@@ -39,8 +39,7 @@ import time
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-def train_model_unified(model, train_loader, val_loader, device, is_torch):
-    
+def train_model_unified(model, train_loader, val_loader, device, is_torch, config):
     start_time = time.time()
     train_losses = []
     val_losses = []
@@ -48,79 +47,67 @@ def train_model_unified(model, train_loader, val_loader, device, is_torch):
     # ---------------- ML MODE ----------------
     if not is_torch:
         X_list, y_list = [], []
-
         for images, labels in train_loader:
             images = preprocess_ml(images)
             X_list.append(images.detach().cpu().numpy())
             y_list.append(labels.detach().cpu().numpy())
-
+        
         X_train = np.concatenate(X_list)
         y_train = np.concatenate(y_list)
-
         X_train = (X_train - 0.5) / 0.5
-
+        
         # validation data
         X_val_list, y_val_list = [], []
-
         for images, labels in val_loader:
             images = preprocess_ml(images)
             X_val_list.append(images.detach().cpu().numpy())
             y_val_list.append(labels.detach().cpu().numpy())
-
+        
         X_val = np.concatenate(X_val_list)
         y_val = np.concatenate(y_val_list)
-
         X_val = (X_val - 0.5) / 0.5
-
+        
         print("Training ML model...")
-
         train_losses = []
         val_losses = []
-
+        
         # simulate learning curve
         steps = np.linspace(0.1, 1.0, 5)
-
         for frac in steps:
             n = int(len(X_train) * frac)
-
             model.fit(X_train[:n], y_train[:n])
-
             train_pred = model.predict(X_train[:n])
             val_pred = model.predict(X_val)
-
             train_acc = accuracy_score(y_train[:n], train_pred)
             val_acc = accuracy_score(y_val, val_pred)
-
             train_losses.append(1 - train_acc)
             val_losses.append(1 - val_acc)
     
     # ---------------- DL MODE ----------------
     else:
         model.train()
-        optimizer = torch.optim.Adam(model.parameters(), lr=Config.learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
         criterion = torch.nn.CrossEntropyLoss()
         
         # Add scheduler
         scheduler = torch.optim.lr_scheduler.StepLR(
-            optimizer, 
+            optimizer,
             step_size=10,  # Reduce LR every 10 epochs
-            gamma=0.1      # Multiply LR by 0.1
+            gamma=0.1  # Multiply LR by 0.1
         )
         
-        for epoch in range(Config.epochs):
+        for epoch in range(config.epochs):
             # -------- Training --------
             model.train()
             train_epoch_loss = 0.0
             for images, labels in train_loader:
                 images = images.to(device)
                 labels = labels.to(device)
-                
                 optimizer.zero_grad()
                 outputs = model(images)
                 loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
-                
                 train_epoch_loss += loss.item()
             
             avg_train_loss = train_epoch_loss / len(train_loader)
@@ -145,38 +132,31 @@ def train_model_unified(model, train_loader, val_loader, device, is_torch):
             
             # Print epoch info
             current_lr = optimizer.param_groups[0]['lr']
-            print(f"Epoch {epoch+1}/{Config.epochs} - Train Loss: {avg_train_loss:.4f} - Val Loss: {avg_val_loss:.4f} - LR: {current_lr:.6f}")
-        
-        # -------- Visualize Losses --------
-        plt.figure(figsize=(12, 6))
-        epochs_range = range(1, len(train_losses) + 1)
-
-        plt.plot(epochs_range, train_losses, marker='o', linestyle='-', linewidth=2, label='Training Loss', color='#2E86AB')
-        plt.plot(epochs_range, val_losses, marker='s', linestyle='-', linewidth=2, label='Validation Loss', color='#A23B72')
-        
-        plt.xlabel('Epoch', fontsize=12, fontweight='bold')
-        plt.ylabel('Loss', fontsize=12, fontweight='bold')
-        plt.title(f'Training vs Validation Loss Over Epochs - {Config.model_type}', fontsize=14, fontweight='bold')
-        plt.legend(fontsize=11, loc='upper right')
-        plt.grid(True, alpha=0.3)
-        plt.tight_layout()
-        save_dir = os.path.join(os.getcwd(), "results", "loss")
-        os.makedirs(save_dir, exist_ok=True)
-
-        save_path = os.path.join(
-            save_dir,
-            f"training_validation_loss_{Config.model_type}.png"
-        )
-
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"Saved plot at: {save_path}")
-        
-        plt.show()
+            print(f"Epoch {epoch+1}/{config.epochs} - Train Loss: {avg_train_loss:.4f} - Val Loss: {avg_val_loss:.4f} - LR: {current_lr:.6f}")
+    
+    # -------- Visualize Losses (MOVED OUTSIDE if-else) --------
+    plt.figure(figsize=(12, 6))
+    epochs_range = range(1, len(train_losses) + 1)
+    plt.plot(epochs_range, train_losses, marker='o', linestyle='-', linewidth=2, label='Training Loss', color='#2E86AB')
+    plt.plot(epochs_range, val_losses, marker='s', linestyle='-', linewidth=2, label='Validation Loss', color='#A23B72')
+    plt.xlabel('Epoch', fontsize=12, fontweight='bold')
+    plt.ylabel('Loss', fontsize=12, fontweight='bold')
+    plt.title(f'Training vs Validation Loss Over Epochs - {config.model_type}', fontsize=14, fontweight='bold')
+    plt.legend(fontsize=11, loc='upper right')
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    
+    save_dir = os.path.join(os.getcwd(), "results", "loss")
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = os.path.join(save_dir, f"training_validation_loss_{config.model_type}.png")
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    print(f"Saved plot at: {save_path}")
+    plt.close()  # Close to free memory
     
     end_time = time.time()
     training_time_minutes = (end_time - start_time) / 60
-    
     return training_time_minutes
+
 
 # ======================================================
 # EVALUATION (UNIFIED)
@@ -354,7 +334,7 @@ if __name__ == '__main__':
         joblib.dump(model, os.path.join(Config.save_dir, f"{Config.model_type}.joblib"))
 
     results = evaluate_full_robustness(model, test_loader, device)
-    num_params = get_model_parameters(model, is_torch_model=is_torch)
+    num_params = count_parameters(model)
 
     results["training_time_minutes"] = training_time
     results["num_parameters"] = num_params
