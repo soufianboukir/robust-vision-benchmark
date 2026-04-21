@@ -47,43 +47,52 @@ def train_model_unified(model, train_loader, val_loader, device, is_torch):
     
     # ---------------- ML MODE ----------------
     if not is_torch:
-        # Prepare training data
-        X_train_list, y_train_list = [], []
+        X_list, y_list = [], []
+
         for images, labels in train_loader:
             images = preprocess_ml(images)
-            X_train_list.append(images.detach().cpu().numpy())
-            y_train_list.append(labels.detach().cpu().numpy())
-        
-        X_train = np.concatenate(X_train_list)
-        y_train = np.concatenate(y_train_list)
-        
-        # Prepare validation data
+            X_list.append(images.detach().cpu().numpy())
+            y_list.append(labels.detach().cpu().numpy())
+
+        X_train = np.concatenate(X_list)
+        y_train = np.concatenate(y_list)
+
+        X_train = (X_train - 0.5) / 0.5
+
+        # validation data
         X_val_list, y_val_list = [], []
+
         for images, labels in val_loader:
             images = preprocess_ml(images)
             X_val_list.append(images.detach().cpu().numpy())
             y_val_list.append(labels.detach().cpu().numpy())
-        
+
         X_val = np.concatenate(X_val_list)
         y_val = np.concatenate(y_val_list)
-        
-        # Train the model
-        print("Training ML Model...")
-        model.fit(X_train, y_train)
-        
-        # Get predictions for loss tracking (using accuracy as proxy)
-        y_train_pred = model.predict(X_train)
-        y_val_pred = model.predict(X_val)
-        
-        train_accuracy = accuracy_score(y_train, y_train_pred)
-        val_accuracy = accuracy_score(y_val, y_val_pred)
-        
-        print(f"Training Accuracy: {train_accuracy:.4f}")
-        print(f"Validation Accuracy: {val_accuracy:.4f}")
-        
-        # For visualization, use loss proxy (1 - accuracy)
-        train_losses.append(1 - train_accuracy)
-        val_losses.append(1 - val_accuracy)
+
+        X_val = (X_val - 0.5) / 0.5
+
+        print("Training ML model...")
+
+        train_losses = []
+        val_losses = []
+
+        # simulate learning curve
+        steps = np.linspace(0.1, 1.0, 5)
+
+        for frac in steps:
+            n = int(len(X_train) * frac)
+
+            model.fit(X_train[:n], y_train[:n])
+
+            train_pred = model.predict(X_train[:n])
+            val_pred = model.predict(X_val)
+
+            train_acc = accuracy_score(y_train[:n], train_pred)
+            val_acc = accuracy_score(y_val, val_pred)
+
+            train_losses.append(1 - train_acc)
+            val_losses.append(1 - val_acc)
     
     # ---------------- DL MODE ----------------
     else:
@@ -151,8 +160,17 @@ def train_model_unified(model, train_loader, val_loader, device, is_torch):
         plt.legend(fontsize=11, loc='upper right')
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig(f'../../results/loss/training_validation_loss_{Config.model_type}.png', dpi=300, bbox_inches='tight')
-        print(f"\n Loss plot saved as 'training_validation_loss_{Config.model_type}.png'")
+        save_dir = os.path.join(os.getcwd(), "results", "loss")
+        os.makedirs(save_dir, exist_ok=True)
+
+        save_path = os.path.join(
+            save_dir,
+            f"training_validation_loss_{Config.model_type}.png"
+        )
+
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Saved plot at: {save_path}")
+        
         plt.show()
     
     end_time = time.time()
