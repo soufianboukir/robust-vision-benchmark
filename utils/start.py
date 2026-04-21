@@ -72,23 +72,44 @@ def get_model(model_name):
 
 def count_parameters_torch(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
-
-
-
-def count_parameters_ml(model):
-    if hasattr(model, "coef_"):  # Logistic Regression
-        return model.coef_.size + model.intercept_.size
-
-    elif hasattr(model, "n_features_in_"):  # KNN
-        return model.n_features_in_
-
-    elif hasattr(model, "estimators_"):  # Random Forest
+ 
+ 
+def count_parameters_ml(model):    
+    # Logistic Regression
+    if hasattr(model, "coef_"):
+        coef_params = model.coef_.size
+        intercept_params = model.intercept_.size if hasattr(model, "intercept_") else 0
+        return coef_params + intercept_params
+ 
+    # Random Forest
+    elif hasattr(model, "estimators_"):
         return sum(tree.tree_.node_count for tree in model.estimators_)
-
+ 
+    # KNN (store entire training data)
+    elif hasattr(model, "n_features_in_"):
+        if hasattr(model, "_fit_X"):  # Training data stored
+            return model._fit_X.size
+        else:
+            return model.n_features_in_
+ 
+    # Support Vector Machine
+    elif hasattr(model, "support_vectors_"):
+        return model.support_vectors_.size + (model.n_support_.size if hasattr(model, "n_support_") else 0)
+ 
+ 
+    # MLP/Neural Network
+    elif hasattr(model, "coefs_"):
+        return sum(coef.size for coef in model.coefs_) + sum(intercept.size for intercept in model.intercepts_)
+ 
     else:
-        return None
-
-
+        # Fallback: try to get model size in memory
+        try:
+            import sys
+            return sys.getsizeof(model)
+        except:
+            return 0  # Return 0 instead of None
+ 
+ 
 def get_model_parameters(model):
     if is_torch_model(model):
         return count_parameters_torch(model)
