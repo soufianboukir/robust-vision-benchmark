@@ -1,5 +1,9 @@
 import os
 import json
+import torch
+
+def is_torch_model(model):
+    return isinstance(model, torch.nn.Module)
 
 
 def save_results(results, model_name):
@@ -63,3 +67,30 @@ def get_model(model_name):
 
     else:
         raise ValueError(f"Unknown model {model_name}")
+
+
+
+def count_parameters_torch(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
+
+def count_parameters_ml(model):
+    if hasattr(model, "coef_"):  # Logistic Regression
+        return model.coef_.size + model.intercept_.size
+
+    elif hasattr(model, "n_features_in_"):  # KNN
+        return model.n_features_in_
+
+    elif hasattr(model, "estimators_"):  # Random Forest
+        return sum(tree.tree_.node_count for tree in model.estimators_)
+
+    else:
+        return None
+
+
+def get_model_parameters(model):
+    if is_torch_model(model):
+        return count_parameters_torch(model)
+    else:
+        return count_parameters_ml(model)
