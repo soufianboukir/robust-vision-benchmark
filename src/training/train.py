@@ -354,7 +354,7 @@ if __name__ == '__main__':
         joblib.dump(model, os.path.join(Config.save_dir, f"{Config.model_type}.joblib"))
 
     results = evaluate_full_robustness(model, test_loader, device)
-    num_params = get_model_parameters(model)
+    num_params = get_model_parameters(model, is_torch_model=is_torch)
 
     results["training_time_minutes"] = training_time
     results["num_parameters"] = num_params
