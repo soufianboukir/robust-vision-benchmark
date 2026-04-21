@@ -67,12 +67,3 @@ def get_model(model_name):
 
     else:
         raise ValueError(f"Unknown model {model_name}")
-
-
-
-import numpy as np
-import torch
-
-def count_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
- 

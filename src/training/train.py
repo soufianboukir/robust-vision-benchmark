@@ -324,7 +324,7 @@ if __name__ == '__main__':
     if is_torch:
         model = model.to(device)
 
-    training_time = train_model_unified(model, train_loader, val_loader, device, is_torch)
+    training_time = train_model_unified(model, train_loader, val_loader, device, is_torch, Config)
 
     os.makedirs(Config.save_dir, exist_ok=True)
 
@@ -334,9 +334,7 @@ if __name__ == '__main__':
         joblib.dump(model, os.path.join(Config.save_dir, f"{Config.model_type}.joblib"))
 
     results = evaluate_full_robustness(model, test_loader, device)
-    num_params = count_parameters(model)
-
+    
     results["training_time_minutes"] = training_time
-    results["num_parameters"] = num_params
 
     save_results(results=results, model_name=Config.model_type)
