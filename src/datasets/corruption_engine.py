@@ -8,7 +8,7 @@ import random
 
 # apply gaussian noise
 def add_gaussian_noise(image, severity): # image is a tensor of shape(Channel, H, W) with values [0,1]
-    std_levels = [0.0, 0.05, 0.10, 0.15, 0.20] # standard deviation levels from 0 to 0.20 more noise
+    std_levels = [0.0, 0.02, 0.04, 0.06, 0.1] # standard deviation levels from 0 to 0.20 more noise
     std = std_levels[severity] # get the standard deviation value using sevrity level
     if std == 0.0: # if the standard deviation equals 0, we return the copy of the image
         # a = image
@@ -26,7 +26,7 @@ def add_gaussian_noise(image, severity): # image is a tensor of shape(Channel, H
 def _gaussian_kernel(kernel_size, sigma):
     coords = torch.arange(kernel_size, dtype=torch.float32) - kernel_size // 2 # generates coords (array of integers) based on the kernel size if it's 5 then coords = [0, 1, 2, 3, 4] - 2 = [-2, -1 , 0, 1, 2]
     # I used the torch.float32 above to ensure that the results of g bottom will be floats not ints cause sometimes int/int = 0, ex: 1/2 = 0: in many old math libraries
-    g = torch.exp(-(coords ** 2) / (2 * sigma ** 2)) # apply the gaussian formula to get [0, 1, 2, 3, 4]the importance of each pixel
+    g = torch.exp(-(coords ** 2) / (2 * sigma ** 2)) # apply the gaussian formula to get [0, 1, 2, 3, 4] the importance of each pixel
     g /= g.sum() # normalization (make sure that the values are sum to 1), new_pixel = old_pixel / sum_pixels
     # g = [a, b, c]
     # outer(g, g) =
@@ -42,10 +42,10 @@ def _gaussian_kernel(kernel_size, sigma):
 def apply_blur(image, severity):
     params = [
         (1, 0.0),   # level 0 – clean
-        (3, 0.5),   # level 1 – slight
-        (5, 1.0),   # level 2 – moderate
-        (7, 1.5),   # level 3 – strong
-        (9, 2.0),   # level 4 – extreme
+        (3, 0.4),   # level 1 – slight
+        (5, 0.8),   # level 2 – moderate
+        (7, 1.2),   # level 3 – strong
+        (9, 1.6),   # level 4 – extreme
     ]
     k_size, sigma = params[severity] # get the kernel_size and the sigma value vased on severity level
     if sigma == 0.0: # return the copy of the image if severity level is 0
@@ -62,7 +62,7 @@ def apply_blur(image, severity):
 
 # apply Occlusion: Random black squares on image
 def apply_occlusion(image, severity):
-    size_levels = [0, 4, 8, 12, 16]
+    size_levels = [0, 2, 4, 8, 12]
     size = size_levels[severity] # get the block size based on severity level
     if size == 0: # return a clone of the image if severity is 0
         return image.clone()
@@ -77,7 +77,7 @@ def apply_occlusion(image, severity):
 
 # Apply image compression
 def apply_jpeg_compression(image, severity):
-    quality_levels = [95, 75, 50, 25, 10]
+    quality_levels = [95, 85, 60, 35, 20]
     quality = quality_levels[severity] # get the compression level based on severity
 
     # tensor (C, H, W) float [0,1] → PIL uint8
@@ -107,8 +107,8 @@ def apply_brightness_contrast(
     severity,
     mode: str = "brightness",
 ):
-    brightness_deltas = [0.0, 0.08, 0.16, 0.24, 0.32]
-    contrast_factors  = [1.0, 0.85, 0.70, 0.55, 0.40]
+    brightness_deltas = [0.0, 0.07, 0.14, 0.21, 0.28]
+    contrast_factors  = [1.0,0.85,0.75,0.65,0.55]
 
     img = image.clone()
     if mode == "brightness":
@@ -121,32 +121,34 @@ def apply_brightness_contrast(
 
 # random rotation: Image augmentation
 def apply_rotation(image, severity):
-    max_angle_deg = [0, 10, 20, 30, 45] # different max angle degree based on severity level
-    max_deg = max_angle_deg[severity] # get max degree based on severity level
-    if max_deg == 0: # return a copy of the image if the severity level is 0
+    max_angle_deg = [0, 10, 20, 30, 45]
+    angle_deg = max_angle_deg[severity]  # FIX: exact value, no randomness
+
+    if angle_deg == 0:
         return image.clone()
 
-    angle_deg = random.uniform(-max_deg, max_deg) # get a random angle degree between -max_deg and max_deg
-    angle_rad = torch.tensor(angle_deg * np.pi / 180.0) # change the angle degree from deg to rad, math functions in PyTorch use radians, not degrees
+    angle_rad = torch.tensor(angle_deg * np.pi / 180.0)
 
-    # These define rotation geometry:
-
-    # cos → horizontal scaling
-    # sin → vertical mixing
     cos_a = torch.cos(angle_rad)
     sin_a = torch.sin(angle_rad)
 
-    # Affine rotation matrix (2×3) for grid_sample
     theta = torch.tensor([
         [cos_a, -sin_a, 0.0],
         [sin_a,  cos_a, 0.0],
-    ], dtype=torch.float32).unsqueeze(0)   # (1, 2, 3)
+    ], dtype=torch.float32).unsqueeze(0)
 
-    img4d = image.unsqueeze(0)             # (1, C, H, W)
-    grid  = F.affine_grid(theta, img4d.size(), align_corners=False)
-    rotated = F.grid_sample(img4d, grid, mode="bilinear",
-                            padding_mode="zeros", align_corners=False)
-    return torch.clamp(rotated.squeeze(0), 0.0, 1.0)
+    img4d = image.unsqueeze(0)
+    grid = F.affine_grid(theta, img4d.size(), align_corners=False)
+
+    rotated = F.grid_sample(
+        img4d,
+        grid,
+        mode="bilinear",
+        padding_mode="zeros",
+        align_corners=False
+    )
+
+    return rotated.squeeze(0)
 
 
 
