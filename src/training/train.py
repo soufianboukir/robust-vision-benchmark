@@ -86,7 +86,7 @@ def train_model_unified(model, train_loader, val_loader, device, is_torch, confi
     # ---------------- DL MODE ----------------
     else:
         model.train()
-        optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate, weight_decay=1e-4)
         criterion = torch.nn.CrossEntropyLoss()
         
         # Add scheduler
