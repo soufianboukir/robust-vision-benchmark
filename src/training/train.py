@@ -12,7 +12,7 @@ from utils.start import get_model
 
 from src.datasets.cifar_loader import train_loader, test_loader, val_loader
 
-from utils.start import is_torch_model, count_parameters
+from utils.start import is_torch_model
 
 # ======================================================
 # PREPROCESSING
