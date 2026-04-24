@@ -8,7 +8,7 @@ class Config:
 
     device = "cuda"
 
-    model_type = "mlp3"
+    model_type = "logistic_regression"
 
     data_path = "./data"
     save_dir = os.path.join(os.getcwd(), "saved_models")
