@@ -8,7 +8,7 @@ class Config:
 
     device = "cuda"
 
-    model_type = "logistic_regression"
+    model_type = "cnn5"
 
     data_path = "./data"
     save_dir = os.path.join(os.getcwd(), "saved_models")
