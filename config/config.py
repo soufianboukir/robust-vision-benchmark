@@ -8,7 +8,7 @@ class Config:
 
     device = "cuda"
 
-    model_type = "random_forest"
+    model_type = "knn"
 
     data_path = "./data"
     save_dir = os.path.join(os.getcwd(), "saved_models")

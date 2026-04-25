@@ -1,2 +1,5 @@
 .venv
 data
+saved_models/
+*.joblib
+*.pkl
