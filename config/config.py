@@ -4,11 +4,11 @@ class Config:
 
     batch_size = 128
     learning_rate = 1e-3
-    epochs = 25
+    epochs = 15
 
     device = "cuda"
 
-    model_type = "cnn5"
+    model_type = "cnn3"
 
     data_path = "./data"
     save_dir = os.path.join(os.getcwd(), "saved_models")
