@@ -50,10 +50,10 @@ def get_model(model_name):
         from src.models.mlp5 import MLP5
         return MLP5()
     elif model_name == 'cnn3':
-        from src.models.cnn3 import CNN3
+        from src.models.LeNet5 import CNN3
         return CNN3()
     elif model_name == 'cnn5':
-        from src.models.cnn5 import CNN5
+        from src.models.AlexNet import CNN5
         return CNN5()
     elif model_name == 'cnn7':
         from src.models.cnn7 import CNN7
