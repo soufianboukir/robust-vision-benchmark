@@ -16,7 +16,6 @@ from src.datasets.cifar_loader import train_loader, test_loader, val_loader
 # ======================================================
 
 def preprocess_dl(images, corruption_type=None, severity=0):
-    """Preprocess images for deep learning models (no flattening)"""
     if corruption_type is not None:
         images = apply_corruption_batch(images, corruption_type, severity)
     return images
@@ -30,7 +29,6 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 
 def train_model_unified(model, train_loader, val_loader, device, config):
-    """Train PyTorch model with validation and learning rate scheduling"""
     start_time = time.time()
     train_losses = []
     val_losses = []
@@ -113,7 +111,6 @@ def train_model_unified(model, train_loader, val_loader, device, config):
 # ======================================================
 
 def evaluate_model_unified(model, loader, device, corruption_type=None, severity=0):
-    """Evaluate PyTorch model on a dataset with optional corruptions"""
     predictions = []
     targets = []
 
@@ -152,7 +149,6 @@ def evaluate_model_unified(model, loader, device, corruption_type=None, severity
 # ======================================================
 
 def evaluate_full_robustness(model, test_loader, device):
-    """Evaluate model robustness across multiple corruption types and severities"""
     results = {}
 
     results["model_name"] = Config.model_type
