@@ -35,11 +35,11 @@ def get_model(model_name):
         from src.models.mlp5 import MLP5
         return MLP5()
     elif model_name == 'leNet5':
-        from src.models.LeNet5 import CNN3
-        return CNN3()
+        from src.models.LeNet5 import LeNet5
+        return LeNet5()
     elif model_name == 'alexNet':
-        from src.models.AlexNet import CNN5
-        return CNN5()
+        from src.models.AlexNet import AlexNet
+        return AlexNet()
     elif model_name == 'resnet18':
         from src.models.resnet18 import ResNet18
         return ResNet18()
