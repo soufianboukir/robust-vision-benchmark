@@ -1,9 +1,5 @@
 import os
 import json
-import torch
-
-def is_torch_model(model):
-    return isinstance(model, torch.nn.Module)
 
 
 def save_results(results, model_name):
@@ -31,39 +27,21 @@ def save_results(results, model_name):
 
 
 def get_model(model_name):
-    # ML models
-    if model_name == 'logistic_regression':
-        from src.models.logistic_regression import LogisticModel
-        return LogisticModel()
-    elif model_name == 'knn':
-        from src.models.knn import KNNModel
-        return KNNModel()
-    elif model_name == 'random_forest':
-        from src.models.random_forest import RandomForestModel
-        return RandomForestModel()
 
-    # DL models
-    elif model_name == 'mlp3':
+    if model_name == 'mlp3':
         from src.models.mlp3 import MLP3
         return MLP3()
     elif model_name == 'mlp5':
         from src.models.mlp5 import MLP5
         return MLP5()
-    elif model_name == 'cnn3':
+    elif model_name == 'leNet5':
         from src.models.LeNet5 import CNN3
         return CNN3()
-    elif model_name == 'cnn5':
+    elif model_name == 'alexNet':
         from src.models.AlexNet import CNN5
         return CNN5()
-    elif model_name == 'cnn7':
-        from src.models.cnn7 import CNN7
-        return CNN7()
     elif model_name == 'resnet18':
         from src.models.resnet18 import ResNet18
         return ResNet18()
-    elif model_name == 'resnet50':
-        from src.models.resnet50 import ResNet50
-        return ResNet50()
-
     else:
         raise ValueError(f"Unknown model {model_name}")

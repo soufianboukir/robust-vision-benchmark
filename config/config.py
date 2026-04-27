@@ -2,13 +2,13 @@ import os
 
 class Config:
 
-    batch_size = 64
-    learning_rate = 8e-4
-    epochs = 20
+    batch_size = 128
+    learning_rate = 1e-3
+    epochs = 30
 
     device = "cuda"
 
-    model_type = "resnet50"
+    model_type = "mlp3"
 
     data_path = "./data"
     save_dir = os.path.join(os.getcwd(), "saved_models")

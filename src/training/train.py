@@ -1,7 +1,6 @@
 import numpy as np
 import os
 import time
-import joblib
 import torch
 
 from sklearn.metrics import precision_score, recall_score, f1_score
@@ -12,129 +11,80 @@ from utils.start import get_model
 
 from src.datasets.cifar_loader import train_loader, test_loader, val_loader
 
-from utils.start import is_torch_model
-
 # ======================================================
 # PREPROCESSING
 # ======================================================
 
-def preprocess_ml(images, corruption_type=None, severity=0):
-    if corruption_type is not None:
-        images = apply_corruption_batch(images, corruption_type, severity)
-    return images.view(images.size(0), -1)
-
 def preprocess_dl(images, corruption_type=None, severity=0):
+    """Preprocess images for deep learning models (no flattening)"""
     if corruption_type is not None:
         images = apply_corruption_batch(images, corruption_type, severity)
-
-    return images  # NO flattening
+    return images
 
 
 # ======================================================
-# TRAINING (UNIFIED)
+# TRAINING (UNIFIED - DL ONLY)
 # ======================================================
-
-import time
 
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score
 
-def train_model_unified(model, train_loader, val_loader, device, is_torch, config):
+def train_model_unified(model, train_loader, val_loader, device, config):
+    """Train PyTorch model with validation and learning rate scheduling"""
     start_time = time.time()
     train_losses = []
     val_losses = []
     
-    # ---------------- ML MODE ----------------
-    if not is_torch:
-        X_list, y_list = [], []
-        for images, labels in train_loader:
-            images = preprocess_ml(images)
-            X_list.append(images.detach().cpu().numpy())
-            y_list.append(labels.detach().cpu().numpy())
-        
-        X_train = np.concatenate(X_list)
-        y_train = np.concatenate(y_list)
-        X_train = (X_train - 0.5) / 0.5
-        
-        # validation data
-        X_val_list, y_val_list = [], []
-        for images, labels in val_loader:
-            images = preprocess_ml(images)
-            X_val_list.append(images.detach().cpu().numpy())
-            y_val_list.append(labels.detach().cpu().numpy())
-        
-        X_val = np.concatenate(X_val_list)
-        y_val = np.concatenate(y_val_list)
-        X_val = (X_val - 0.5) / 0.5
-        
-        print("Training ML model...")
-        train_losses = []
-        val_losses = []
-        
-        # simulate learning curve
-        steps = np.linspace(0.1, 1.0, 5)
-        for frac in steps:
-            n = int(len(X_train) * frac)
-            model.fit(X_train[:n], y_train[:n])
-            train_pred = model.predict(X_train[:n])
-            val_pred = model.predict(X_val)
-            train_acc = accuracy_score(y_train[:n], train_pred)
-            val_acc = accuracy_score(y_val, val_pred)
-            train_losses.append(1 - train_acc)
-            val_losses.append(1 - val_acc)
+    model.train()
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate, weight_decay=1e-4)
+    criterion = torch.nn.CrossEntropyLoss()
     
-    # ---------------- DL MODE ----------------
-    else:
+    # Add scheduler
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer,
+        step_size=10,  # Reduce LR every 10 epochs
+        gamma=0.1  # Multiply LR by 0.1
+    )
+    
+    for epoch in range(config.epochs):
+        # -------- Training --------
         model.train()
-        optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate, weight_decay=1e-4)
-        criterion = torch.nn.CrossEntropyLoss()
+        train_epoch_loss = 0.0
+        for images, labels in train_loader:
+            images = images.to(device)
+            labels = labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            train_epoch_loss += loss.item()
         
-        # Add scheduler
-        scheduler = torch.optim.lr_scheduler.StepLR(
-            optimizer,
-            step_size=10,  # Reduce LR every 10 epochs
-            gamma=0.1  # Multiply LR by 0.1
-        )
+        avg_train_loss = train_epoch_loss / len(train_loader)
+        train_losses.append(avg_train_loss)
         
-        for epoch in range(config.epochs):
-            # -------- Training --------
-            model.train()
-            train_epoch_loss = 0.0
-            for images, labels in train_loader:
+        # -------- Validation --------
+        model.eval()
+        val_epoch_loss = 0.0
+        with torch.no_grad():
+            for images, labels in val_loader:
                 images = images.to(device)
                 labels = labels.to(device)
-                optimizer.zero_grad()
                 outputs = model(images)
                 loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
-                train_epoch_loss += loss.item()
-            
-            avg_train_loss = train_epoch_loss / len(train_loader)
-            train_losses.append(avg_train_loss)
-            
-            # -------- Validation --------
-            model.eval()
-            val_epoch_loss = 0.0
-            with torch.no_grad():
-                for images, labels in val_loader:
-                    images = images.to(device)
-                    labels = labels.to(device)
-                    outputs = model(images)
-                    loss = criterion(outputs, labels)
-                    val_epoch_loss += loss.item()
-            
-            avg_val_loss = val_epoch_loss / len(val_loader)
-            val_losses.append(avg_val_loss)
-            
-            # Step the scheduler
-            scheduler.step()
-            
-            # Print epoch info
-            current_lr = optimizer.param_groups[0]['lr']
-            print(f"Epoch {epoch+1}/{config.epochs} - Train Loss: {avg_train_loss:.4f} - Val Loss: {avg_val_loss:.4f} - LR: {current_lr:.6f}")
+                val_epoch_loss += loss.item()
+        
+        avg_val_loss = val_epoch_loss / len(val_loader)
+        val_losses.append(avg_val_loss)
+        
+        # Step the scheduler
+        scheduler.step()
+        
+        # Print epoch info
+        current_lr = optimizer.param_groups[0]['lr']
+        print(f"Epoch {epoch+1}/{config.epochs} - Train Loss: {avg_train_loss:.4f} - Val Loss: {avg_val_loss:.4f} - LR: {current_lr:.6f}")
     
-    # -------- Visualize Losses (MOVED OUTSIDE if-else) --------
+    # -------- Visualize Losses --------
     plt.figure(figsize=(12, 6))
     epochs_range = range(1, len(train_losses) + 1)
     plt.plot(epochs_range, train_losses, marker='o', linestyle='-', linewidth=2, label='Training Loss', color='#2E86AB')
@@ -159,49 +109,32 @@ def train_model_unified(model, train_loader, val_loader, device, is_torch, confi
 
 
 # ======================================================
-# EVALUATION (UNIFIED)
+# EVALUATION (UNIFIED - DL ONLY)
 # ======================================================
 
 def evaluate_model_unified(model, loader, device, corruption_type=None, severity=0):
+    """Evaluate PyTorch model on a dataset with optional corruptions"""
     predictions = []
     targets = []
 
-    torch_model = is_torch_model(model)
-
-    if torch_model:
-        model.eval()
+    model.eval()
 
     for images, labels in loader:
+        images = preprocess_dl(images, corruption_type, severity)
+        images = images.to(device)
+        labels = labels.to(device)
 
-        if torch_model:
-            images = preprocess_dl(images, corruption_type, severity)
-        else:
-            images = preprocess_ml(images, corruption_type, severity)
+        with torch.no_grad():
+            outputs = model(images)
+            preds = outputs.argmax(dim=1)
 
-        # ---------------- DL ----------------
-        if torch_model:
-            images = images.to(device)
-            labels = labels.to(device)
-
-            with torch.no_grad():
-                outputs = model(images)
-                preds = outputs.argmax(dim=1)
-
-            predictions.extend(preds.cpu().numpy())
-            targets.extend(labels.cpu().numpy())
-
-        # ---------------- ML ----------------
-        else:
-            preds = model.predict(images.detach().cpu().numpy())
-
-            predictions.extend(preds)
-            targets.extend(labels.detach().cpu().numpy())
+        predictions.extend(preds.cpu().numpy())
+        targets.extend(labels.cpu().numpy())
 
     predictions = np.array(predictions)
     targets = np.array(targets)
 
     accuracy = (predictions == targets).mean()
-
     precision = precision_score(targets, predictions, average='weighted', zero_division=0)
     recall = recall_score(targets, predictions, average='weighted', zero_division=0)
     f1 = f1_score(targets, predictions, average='weighted', zero_division=0)
@@ -219,6 +152,7 @@ def evaluate_model_unified(model, loader, device, corruption_type=None, severity
 # ======================================================
 
 def evaluate_full_robustness(model, test_loader, device):
+    """Evaluate model robustness across multiple corruption types and severities"""
     results = {}
 
     results["model_name"] = Config.model_type
@@ -263,17 +197,17 @@ def evaluate_full_robustness(model, test_loader, device):
             "f1": np.mean(f1s)
         }
 
-        # RQ1
+        # RQ1: Sensitivity to corruption
         sensitivity = clean_acc - avg_acc
         sensitivity_scores[corruption] = sensitivity
 
-        # RQ5
+        # RQ5: Severity degradation
         severity_degradation = accs[0] - accs[-1]
 
-        # Stability
+        # Stability across severity levels
         stability = 1 - np.std(accs)
 
-        # CRS
+        # CRS: Corruption Robustness Score
         crs = avg_acc / clean_acc if clean_acc > 0 else 0
 
         all_crs.append(crs)
@@ -318,20 +252,13 @@ if __name__ == '__main__':
     device = torch.device(Config.device if torch.cuda.is_available() else "cpu")
 
     model = get_model(Config.model_type)
+    model = model.to(device)
 
-    is_torch = is_torch_model(model)
-
-    if is_torch:
-        model = model.to(device)
-
-    training_time = train_model_unified(model, train_loader, val_loader, device, is_torch, Config)
+    training_time = train_model_unified(model, train_loader, val_loader, device, Config)
 
     os.makedirs(Config.save_dir, exist_ok=True)
 
-    if is_torch:
-        torch.save(model.state_dict(), os.path.join(Config.save_dir, f"{Config.model_type}.pt"))
-    else:
-        joblib.dump(model, os.path.join(Config.save_dir, f"{Config.model_type}.joblib"))
+    torch.save(model.state_dict(), os.path.join(Config.save_dir, f"{Config.model_type}.pt"))
 
     results = evaluate_full_robustness(model, test_loader, device)
     
