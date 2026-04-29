@@ -8,7 +8,7 @@ class Config:
 
     device = "cuda"
 
-    model_type = "resnet18"
+    model_type = "mlp3"
 
     data_path = "./data"
     save_dir = os.path.join(os.getcwd(), "saved_models")
