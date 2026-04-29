@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 
-file_path = "../data/raw/cifar-10-batches-py/data_batch_1"
+file_path = "data/raw/cifar-10-batches-py/data_batch_1"
 
 with open(file_path, "rb") as f:
     batch = pickle.load(f, encoding="bytes")
