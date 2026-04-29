@@ -76,7 +76,6 @@ severity_level = st.sidebar.slider(
     help="0 = Clean, 4 = Strongest corruption",
 )
 show_comparison = st.sidebar.checkbox("Compare All Models", value=True)
-show_insights = st.sidebar.checkbox("Show Insights", value=True)
 
 st.sidebar.markdown("---")
 st.sidebar.info(
@@ -196,22 +195,39 @@ st.markdown("---")
 
 st.header("Section 3: Performance Under Corruption")
 col1, col2 = st.columns(2)
+
 with col1:
     st.subheader(f"Degradation: {selected_corruption.title()}")
     fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # X-axis values for severity levels 1 to 4
+    severity_levels_plot = [1, 2, 3, 4]
+    
     for model in models_list if show_comparison else [selected_model]:
         model_corruption_data = all_results[model]["corruptions"][selected_corruption]
+        # accuracies list corresponds to L1, L2, L3, L4 (indices 0-3)
         accuracies = [sev["accuracy"] for sev in model_corruption_data["severities"]]
-        severity_levels_plot = list(range(len(accuracies)))
-        ax.plot(severity_levels_plot, accuracies, marker="o", linewidth=2.5, label=model.upper(), markersize=8)
+        ax.plot(severity_levels_plot, accuracies, marker="o", linewidth=2.5, 
+                label=model.upper(), markersize=8)
+        
+        # Optionally plot clean accuracy as a horizontal line or star marker
+        clean_acc = all_results[model]["clean"]["accuracy"]
+        ax.axhline(y=clean_acc, linestyle='--', linewidth=1, alpha=0.5, 
+                   color=ax.lines[-1].get_color() if ax.lines else 'gray')
+        # Add a star marker at x=0 for clean accuracy
+        ax.plot(0, clean_acc, marker='*', markersize=12, 
+                color=ax.lines[-1].get_color() if ax.lines else 'gray')
+    
     ax.set_xlabel("Corruption Severity", fontweight="bold", fontsize=11)
     ax.set_ylabel("Accuracy", fontweight="bold", fontsize=11)
     ax.set_title(f"{selected_corruption.title()} - Degradation Curve", fontweight="bold", fontsize=12)
-    ax.set_xticks(range(5))
+    ax.set_xticks([0, 1, 2, 3, 4])
     ax.set_xticklabels(["Clean", "L1", "L2", "L3", "L4"])
+    ax.set_xlim([-0.5, 4.5])
     ax.grid(alpha=0.3)
     ax.legend()
     ax.set_ylim([0, 1.0])
+    
     st.pyplot(fig)
     plt.close()
 
