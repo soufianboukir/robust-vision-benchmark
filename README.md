@@ -2,6 +2,9 @@
 
 A comprehensive interactive dashboard for evaluating the robustness of deep learning models against image corruptions.
 
+<img width="2045" height="1036" alt="Screenshot from 2026-04-30 12-39-09" src="https://github.com/user-attachments/assets/73ce6d07-f6c7-4ef3-99c5-c8d909f5d590" />
+
+
 ## Features
 
 ### Control Panel (Sidebar)
