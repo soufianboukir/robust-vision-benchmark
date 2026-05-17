@@ -3,7 +3,7 @@
 A comprehensive interactive dashboard for evaluating the robustness of deep learning models against image corruptions.
 
 ## 📄 Report
-- Full analysis report: [PDF](https://github.com/soufianboukir/robust-vision-benchmark/blob/main/reports/main.pdf)
+- Full analysis report: [PDF](https://github.com/soufianboukir/robust-vision-benchmark/blob/main/reports/robustness-analysis-of-deep-learning-models-under-image-corruptions.pdf)
 - Streamlit dashboard: [Live App](https://robust-vision-benchmark.streamlit.app/)
   
 <img width="2045" height="1036" alt="Screenshot from 2026-04-30 12-39-09" src="https://github.com/user-attachments/assets/73ce6d07-f6c7-4ef3-99c5-c8d909f5d590" />
